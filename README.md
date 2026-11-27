@@ -1,12 +1,11 @@
 # Todo GitOps
 
-Argo CD syncs local k3d from this repository’s `main` branch. Application code and the [promotion workflow](https://github.com/ehye/KubernetesSubmissions/blob/main/.github/workflows/todo-environments.yaml) live in `KubernetesSubmissions`.
+Argo CD reads this repo’s `main` branch to deploy Todo on local k3d. The [source workflow](https://github.com/ehye/KubernetesSubmissions/blob/main/.github/workflows/todo-environments.yaml) uses the `todo-gitops-bot` GitHub App to get a short-lived token with write access to this repo only. CI commits image digests; Argo CD deploys them.
 
-| Namespace | Desired state | Image source |
-|---|---|---|
-| `staging` | [Staging overlay](overlays/staging) | Build from source `main` |
-| `production` | [Production overlay](overlays/production) | Tagged commit’s staging digests |
-| `project` | [Local exercise](todo_app/overlays/k3d) | Images imported into k3d |
+- `overlays/staging/` and `overlays/production/` pin each environment’s images and reference its Kustomize configuration under `todo_app/overlays/`.
+- `builds/<source-commit>.json` records the exact frontend, backend, and broadcaster image digests built for that commit.
+- `promotions/staging.json` and `promotions/production.json` record the source commit and workflow run selected for each environment. Check Argo CD for live health.
+- `argocd/` defines the Applications, including the original `project` app at `todo_app/overlays/k3d/`.
 
 ## CI/CD flow
 
@@ -38,10 +37,7 @@ sequenceDiagram
     end
 ```
 
-- **[Build records](builds)** answer “Which images did we build from this commit?” Each `<source-commit>.json` lists the exact GHCR digests for the frontend, backend, and broadcaster. When a release is tagged, production reuses those images instead of rebuilding them.
-- **[Current promotions](promotions)** answer “Which source commit did CI select for each environment?” `staging.json` and `production.json` each record the commit and GitHub Actions run number. These describe the intended release; check Argo CD for what is actually synced and healthy.
-
-Provision Secrets outside Git, then register the [Argo CD Applications](argocd):
+Provision Secrets outside Git, then register the Applications:
 
 ```sh
 kubectl --context=k3d-k3d-test apply -f argocd/
