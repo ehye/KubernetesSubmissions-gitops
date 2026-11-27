@@ -1,20 +1,48 @@
-# Todo desired state
+# Todo GitOps
 
-Argo CD reads `main` of this repository. Application code, Dockerfiles and the release workflow live in [KubernetesSubmissions](https://github.com/ehye/KubernetesSubmissions).
+Argo CD syncs local k3d from this repository’s `main` branch. Application code and the [promotion workflow](https://github.com/ehye/KubernetesSubmissions/blob/main/.github/workflows/todo-environments.yaml) live in `KubernetesSubmissions`.
 
-| Application | Namespace | Kustomize path | Promotion |
-|---|---|---|---|
-| todo-app-staging | staging | overlays/staging | Source main build |
-| todo-app-production | production | overlays/production | Source tag, using that commit’s recorded build |
-| todo-app | project | todo_app/overlays/k3d | Existing local exercise, imported images |
+| Namespace | Desired state | Image source |
+|---|---|---|
+| `staging` | [Staging overlay](overlays/staging) | Build from source `main` |
+| `production` | [Production overlay](overlays/production) | Tagged commit’s staging digests |
+| `project` | [Local exercise](todo_app/overlays/k3d) | Images imported into k3d |
 
-Edit shared resources under `todo_app/base`, `todo_backend/manifests` and `broadcaster`, and environment configuration under `todo_app/overlays`. The workflow updates image digests in `overlays/<env>/kustomization.yaml`, keeps immutable staging build records under `builds/` and records the source commit in `promotions/`. A config-only commit does not rebuild images.
+## CI/CD flow
 
-On k3d, install Argo CD, Argo Rollouts, Envoy Gateway (`local-envoy`), NATS, Prometheus and local-path storage. Provision `todo-postgres-secret` in each namespace; production also needs `broadcaster-discord` and `todo-backup-gcs-secret`. Configure registry pull access for private GHCR packages. Never commit credentials. Register each Application when its prerequisites are available:
+```mermaid
+sequenceDiagram
+    participant Src as KubernetesSubmissions
+    participant CI as GitHub Actions
+    participant Reg as GHCR
+    participant Git as KubernetesSubmissions-gitops (main)
+    participant CD as Argo CD
+    participant K as Local k3d
+
+    Src->>CI: Push commit to main
+    CI->>Reg: Build and push frontend, backend, broadcaster
+    Reg-->>CI: Three image digests
+    CI->>Git: Record digests for commit SHA and update staging overlay
+    CD->>Git: Read staging overlay
+    CD->>K: Sync staging namespace
+
+    Src->>CI: Push release tag
+    CI->>Git: Look up build record for tagged commit SHA
+    alt Staged build exists
+        Git-->>CI: Exact image digests, no rebuild
+        CI->>Git: Update production overlay
+        CD->>Git: Read production overlay
+        CD->>K: Sync production namespace
+    else No staged build
+        CI-->>Src: Fail promotion without changing production
+    end
+```
+
+[Diagram source](docs/ci-cd.mmd) · [Build records](builds) · [Current promotions](promotions)
+
+Provision Secrets outside Git, then register the [Argo CD Applications](argocd):
 
 ```sh
-kubectl --context=k3d-k3d-test apply -f argocd/todo-app.yaml
-kubectl --context=k3d-k3d-test apply -f argocd/staging.yaml
-kubectl --context=k3d-k3d-test apply -f argocd/production.yaml
+kubectl --context=k3d-k3d-test apply -f argocd/
 kubectl --context=k3d-k3d-test -n argocd get applications
 ```

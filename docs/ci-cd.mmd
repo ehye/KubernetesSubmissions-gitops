@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Src as KubernetesSubmissions
+    participant CI as GitHub Actions
+    participant Reg as GHCR
+    participant Git as KubernetesSubmissions-gitops (main)
+    participant CD as Argo CD
+    participant K as Local k3d
+
+    Src->>CI: Push commit to main
+    CI->>Reg: Build and push frontend, backend, broadcaster
+    Reg-->>CI: Three image digests
+    CI->>Git: Record digests for commit SHA and update staging overlay
+    CD->>Git: Read staging overlay
+    CD->>K: Sync staging namespace
+
+    Src->>CI: Push release tag
+    CI->>Git: Look up build record for tagged commit SHA
+    alt Staged build exists
+        Git-->>CI: Exact image digests, no rebuild
+        CI->>Git: Update production overlay
+        CD->>Git: Read production overlay
+        CD->>K: Sync production namespace
+    else No staged build
+        CI-->>Src: Fail promotion without changing production
+    end
