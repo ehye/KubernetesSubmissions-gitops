@@ -38,7 +38,8 @@ sequenceDiagram
     end
 ```
 
-[Diagram source](docs/ci-cd.mmd) · [Build records](builds) · [Current promotions](promotions)
+- **[Build records](builds)** answer “Which images did we build from this commit?” Each `<source-commit>.json` lists the exact GHCR digests for the frontend, backend, and broadcaster. When a release is tagged, production reuses those images instead of rebuilding them.
+- **[Current promotions](promotions)** answer “Which source commit did CI select for each environment?” `staging.json` and `production.json` each record the commit and GitHub Actions run number. These describe the intended release; check Argo CD for what is actually synced and healthy.
 
 Provision Secrets outside Git, then register the [Argo CD Applications](argocd):
 
