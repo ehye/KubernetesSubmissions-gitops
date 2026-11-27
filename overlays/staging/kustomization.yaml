@@ -8,17 +8,17 @@
     {
       "name": "broadcaster",
       "newName": "ghcr.io/ehye/broadcaster",
-      "digest": "sha256:da2565842371a5d35e015759367fb5eb299e618542ddcacb9da8dcd36f931955"
+      "digest": "sha256:55a372812d70788a13e824380217d900ebca7d6fd5569a5d54569d965eb89e88"
     },
     {
       "name": "todo-app",
       "newName": "ghcr.io/ehye/todo-app",
-      "digest": "sha256:ce479972f3e4b90b9abcff6b663df4401237325f1e6a901a750b51d4c25b9a45"
+      "digest": "sha256:44243fbad968cf2a6f2c18bd92d674b1f0393458c2a515434be753c9a5569622"
     },
     {
       "name": "todo-backend",
       "newName": "ghcr.io/ehye/todo-backend",
-      "digest": "sha256:511572ccf4bba62c9e406190d0333accfbd973d50c460a4987daa953d03045d4"
+      "digest": "sha256:454b3088240aaf2dc33b96160c29563e60f80cde5863263cc7eb3fbfba2565e5"
     }
   ]
 }
