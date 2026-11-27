@@ -1,0 +1,17 @@
+[
+  {
+    "name": "broadcaster",
+    "newName": "ghcr.io/ehye/broadcaster",
+    "digest": "sha256:0b378af31cd9d67eec0855488c070d890b107887bde1c903c1b8dd6d7e465857"
+  },
+  {
+    "name": "todo-app",
+    "newName": "ghcr.io/ehye/todo-app",
+    "digest": "sha256:a88bb5b5df1d2ccb8b6592258cc5c89a5a42cbaa4d5e06c42a5fff1361bdf251"
+  },
+  {
+    "name": "todo-backend",
+    "newName": "ghcr.io/ehye/todo-backend",
+    "digest": "sha256:f39de2e01c0996948551533467857130bda27925d85f1ae76ab4a4993455ae4f"
+  }
+]
