@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app-dep
+  namespace: project
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      containers:
+        - name: todo-app
+          image: todo-app:4.5
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "128Mi"
+          envFrom:
+            - configMapRef:
+                name: todo-app-config
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet: { path: /readyz, port: 3000 }
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: { path: /livez, port: 3000 }
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: shared-data-pvc

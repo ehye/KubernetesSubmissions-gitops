@@ -1,0 +1,24 @@
+{
+  "apiVersion": "kustomize.config.k8s.io/v1beta1",
+  "kind": "Kustomization",
+  "resources": [
+    "../../todo_app/overlays/production"
+  ],
+  "images": [
+    {
+      "name": "broadcaster",
+      "newName": "ghcr.io/ehye/broadcaster",
+      "digest": "sha256:60730620a7aa169c23075199a0cf60ceaf062761dfe260fadc6857eea8b4abdf"
+    },
+    {
+      "name": "todo-app",
+      "newName": "ghcr.io/ehye/todo-app",
+      "digest": "sha256:f3d94a3069f11dc6e8a67bbdc2549214a6fb415d49199d276a55faf644e5a517"
+    },
+    {
+      "name": "todo-backend",
+      "newName": "ghcr.io/ehye/todo-backend",
+      "digest": "sha256:6b50c000bc30fc0e7967cb4f265453bedcf325e74d202538e20937505d07174f"
+    }
+  ]
+}
